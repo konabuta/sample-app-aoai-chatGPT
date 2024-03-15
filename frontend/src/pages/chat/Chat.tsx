@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useContext, useLayoutEffect } from "react";
-import { CommandBarButton, IconButton, Dialog, DialogType, Stack } from "@fluentui/react";
+import { CommandBarButton, IconButton, Dialog, DialogType, Stack, Checkbox } from "@fluentui/react";
 import { SquareRegular, ShieldLockRegular, ErrorCircleRegular } from "@fluentui/react-icons";
 
 import ReactMarkdown from "react-markdown";
@@ -57,6 +57,7 @@ const Chat = () => {
     const [clearingChat, setClearingChat] = useState<boolean>(false);
     const [hideErrorDialog, { toggle: toggleErrorDialog }] = useBoolean(true);
     const [errorMsg, setErrorMsg] = useState<ErrorMessage | null>()
+    const [searchFlag, setSearchFlag] = useState<boolean>(false);
 
     const errorDialogContentProps = {
         type: DialogType.close,
@@ -75,9 +76,9 @@ const Chat = () => {
     const [ASSISTANT, TOOL, ERROR] = ["assistant", "tool", "error"]
 
     useEffect(() => {
-        if (appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.Working  
+        if (appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.Working
             && appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured
-            && appStateContext?.state.chatHistoryLoadingState === ChatHistoryLoadingState.Fail 
+            && appStateContext?.state.chatHistoryLoadingState === ChatHistoryLoadingState.Fail
             && hideErrorDialog) {
             let subtitle = `${appStateContext.state.isCosmosDBAvailable.status}. Please contact the site administrator.`
             setErrorMsg({
@@ -146,7 +147,7 @@ const Chat = () => {
         }
     }
 
-    const makeApiRequestWithoutCosmosDB = async (question: string, conversationId?: string) => {
+    const makeApiRequestWithoutCosmosDB = async (question: string, conversationId?: string, searchFlag?: boolean) => {
         setIsLoading(true);
         setShowLoadingMessage(true);
         const abortController = new AbortController();
@@ -157,6 +158,7 @@ const Chat = () => {
             role: "user",
             content: question,
             date: new Date().toISOString(),
+            searchFlag: searchFlag,
         };
 
         let conversation: Conversation | null | undefined;
@@ -186,7 +188,7 @@ const Chat = () => {
         const request: ConversationRequest = {
             messages: [...conversation.messages.filter((answer) => answer.role !== ERROR)]
         };
-
+        console.log("request", request)
         let result = {} as ChatResponse;
         try {
             const response = await conversationApi(request, abortController.signal);
@@ -381,7 +383,7 @@ const Chat = () => {
                             } else {
                                 console.log("Incomplete message. Continuing...")
                             }
-                         }
+                        }
                     });
                 }
 
@@ -456,7 +458,7 @@ const Chat = () => {
                             role: ERROR,
                             content: errorMessage,
                             date: new Date().toISOString()
-                        } 
+                        }
                         setMessages([...messages, userMessage, errorChatMsg])
                         setIsLoading(false);
                         setShowLoadingMessage(false);
@@ -627,9 +629,9 @@ const Chat = () => {
             {showAuthMessage ? (
                 <Stack className={styles.chatEmptyState}>
                     <ShieldLockRegular className={styles.chatIcon} style={{ color: 'darkorange', height: "200px", width: "200px" }} />
-                    <h1 className={styles.chatEmptyStateTitle}>Authentication Not Configured</h1>
+                    <h1 className={styles.chatEmptyStateTitle}> AAuthentication Not Configured</h1>
                     <h2 className={styles.chatEmptyStateSubtitle}>
-                        This app does not have authentication configured. Please add an identity provider by finding your app in the <a href="https://portal.azure.com/" target="_blank">Azure Portal</a> 
+                        This app does not have authentication configured. Please add an identity provider by finding your app in the <a href="https://portal.azure.com/" target="_blank">Azure Portal</a>
                         and following <a href="https://learn.microsoft.com/en-us/azure/app-service/scenario-secure-app-authentication-app-service#3-configure-authentication-and-authorization" target="_blank">these instructions</a>.
                     </h2>
                     <h2 className={styles.chatEmptyStateSubtitle} style={{ fontSize: "20px" }}><strong>Authentication configuration takes a few minutes to apply. </strong></h2>
@@ -710,6 +712,11 @@ const Chat = () => {
                                 </Stack>
                             )}
                             <Stack>
+                                <Checkbox
+                                    label="Activate on your data"
+                                    checked={searchFlag}
+                                    onChange={() => setSearchFlag && setSearchFlag(true)}
+                                />
                                 {appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured && <CommandBarButton
                                     role="button"
                                     styles={{
@@ -763,15 +770,18 @@ const Chat = () => {
                                     modalProps={modalProps}
                                 >
                                 </Dialog>
+
                             </Stack>
+
                             <QuestionInput
                                 clearOnSend
                                 placeholder="Type a new question..."
                                 disabled={isLoading}
                                 onSend={(question, id) => {
-                                    appStateContext?.state.isCosmosDBAvailable?.cosmosDB ? makeApiRequestWithCosmosDB(question, id) : makeApiRequestWithoutCosmosDB(question, id)
+                                    appStateContext?.state.isCosmosDBAvailable?.cosmosDB ? makeApiRequestWithCosmosDB(question, id) : makeApiRequestWithoutCosmosDB(question, id, searchFlag)
                                 }}
                                 conversationId={appStateContext?.state.currentChat?.id ? appStateContext?.state.currentChat?.id : undefined}
+                                setSearchFlag={setSearchFlag}
                             />
                         </Stack>
                     </div>
@@ -787,7 +797,7 @@ const Chat = () => {
                                 <ReactMarkdown
                                     linkTarget="_blank"
                                     className={styles.citationPanelContent}
-                                    children={DOMPurify.sanitize(activeCitation.content, {ALLOWED_TAGS: XSSAllowTags})}
+                                    children={DOMPurify.sanitize(activeCitation.content, { ALLOWED_TAGS: XSSAllowTags })}
                                     remarkPlugins={[remarkGfm]}
                                     rehypePlugins={[rehypeRaw]}
                                 />

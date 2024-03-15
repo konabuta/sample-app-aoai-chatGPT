@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Stack, TextField } from "@fluentui/react";
+import { Stack, TextField, Checkbox } from "@fluentui/react";
 import { SendRegular } from "@fluentui/react-icons";
 import Send from "../../assets/Send.svg";
 import styles from "./QuestionInput.module.css";
@@ -10,9 +10,56 @@ interface Props {
     placeholder?: string;
     clearOnSend?: boolean;
     conversationId?: string;
+    setSearchFlag?: (searchFlag: boolean) => void;
 }
 
-export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId }: Props) => {
+interface SendQuestionProps {
+    disabled: boolean;
+    question: string;
+    conversationId?: string;
+    onSend: (question: string, id?: string) => void;
+    clearOnSend?: boolean;
+}
+
+interface OnEnterPressProps {
+    key: string;
+    shiftKey: boolean;
+    nativeEvent?: { isComposing?: boolean };
+}
+
+interface OnQuestionChangeProps {
+    event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>;
+    newValue?: string;
+}
+
+interface SendQuestionDisabledProps {
+    disabled: boolean;
+    question: string;
+}
+
+interface TextFieldProps {
+    className: string;
+    placeholder?: string;
+    multiline: boolean;
+    resizable: boolean;
+    borderless: boolean;
+    value: string;
+    onChange: (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => void;
+    onKeyDown: (ev: React.KeyboardEvent<Element>) => void;
+}
+
+interface SendButtonProps {
+    role: string;
+    tabIndex: number;
+    ariaLabel: string;
+    onClick: () => void;
+    onKeyDown: (e: React.KeyboardEvent<Element>) => void;
+    sendQuestionDisabled: boolean;
+    className: string;
+    src?: string;
+}
+
+export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId, setSearchFlag }: Props) => {
     const [question, setQuestion] = useState<string>("");
 
     const sendQuestion = () => {
@@ -20,9 +67,9 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
             return;
         }
 
-        if(conversationId){
+        if (conversationId) {
             onSend(question, conversationId);
-        }else{
+        } else {
             onSend(question);
         }
 
@@ -56,17 +103,23 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 onChange={onQuestionChange}
                 onKeyDown={onEnterPress}
             />
-            <div className={styles.questionInputSendButtonContainer} 
-                role="button" 
+            <Checkbox
+                className={styles.questionInputCheckbox}
+                label="Activate on your data"
+                // if this checkbox is checked, set searchFlag to true, else set it to false
+                onChange={() => setSearchFlag && setSearchFlag(true)}
+            />
+            <div className={styles.questionInputSendButtonContainer}
+                role="button"
                 tabIndex={0}
                 aria-label="Ask question button"
                 onClick={sendQuestion}
                 onKeyDown={e => e.key === "Enter" || e.key === " " ? sendQuestion() : null}
             >
-                { sendQuestionDisabled ? 
-                    <SendRegular className={styles.questionInputSendButtonDisabled}/>
+                {sendQuestionDisabled ?
+                    <SendRegular className={styles.questionInputSendButtonDisabled} />
                     :
-                    <img src={Send} className={styles.questionInputSendButton}/>
+                    <img src={Send} className={styles.questionInputSendButton} />
                 }
             </div>
             <div className={styles.questionInputBottomBorder} />

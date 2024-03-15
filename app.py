@@ -220,7 +220,9 @@ def should_use_data():
 SHOULD_USE_DATA = should_use_data()
 
 # Initialize Azure OpenAI Client
-def init_openai_client(use_data=SHOULD_USE_DATA):
+def init_openai_client(searchFlag, use_data=SHOULD_USE_DATA):
+    if searchFlag:
+        use_data = False
     azure_openai_client = None
     try:
         # API version check
@@ -484,7 +486,7 @@ def get_configured_data_source():
 
     return data_source
 
-def prepare_model_args(request_body):
+def prepare_model_args(request_body, searchFlag):
     request_messages = request_body.get("messages", [])
     messages = []
     if not SHOULD_USE_DATA:
@@ -512,7 +514,7 @@ def prepare_model_args(request_body):
         "model": AZURE_OPENAI_MODEL,
     }
 
-    if SHOULD_USE_DATA:
+    if SHOULD_USE_DATA and not searchFlag:
         model_args["extra_body"] = {
             "data_sources": [get_configured_data_source()]
         }
@@ -538,10 +540,17 @@ def prepare_model_args(request_body):
     return model_args
 
 async def send_chat_request(request):
-    model_args = prepare_model_args(request)
+    # get searchFlag from this data: {'messages': [{'id': '16e35b2d-ac06-1672-f4df-4f6ca5a913de', 'role': 'user', 'content': 'おは円アクアリウム', 'date': '2024-03-12T16:18:15.726Z', 'searchFlag': True}]}
+    print("send_chat_request: ", type(request))
+    print("send_chat_request: ", request)
+    print("request - searchFlag", request['messages'][0]['searchFlag'])
+    searchFlag = request['messages'][0]['searchFlag']
+    model_args = prepare_model_args(request, searchFlag)
+    print("model_args: ", model_args)
 
     try:
-        azure_openai_client = init_openai_client()
+        print("searchFlag: ", searchFlag)
+        azure_openai_client = init_openai_client(searchFlag=searchFlag)
         response = await azure_openai_client.chat.completions.create(**model_args)
 
     except Exception as e:

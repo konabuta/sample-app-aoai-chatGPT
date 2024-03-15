@@ -31,6 +31,7 @@ export type ChatMessage = {
     date: string;
     feedback?: Feedback;
     context?: string;
+    searchFlag?: boolean;
 };
 
 export type Conversation = {

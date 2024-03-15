@@ -20,6 +20,13 @@
       "console": "integratedTerminal",
       "justMyCode": false,
       "envFile": "${workspaceFolder}/.env",
+  },
+  {
+      "name": "Frontend: watch",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev",
+      "cwd": "${workspaceFolder}/frontend",
   }
   ]
 }
