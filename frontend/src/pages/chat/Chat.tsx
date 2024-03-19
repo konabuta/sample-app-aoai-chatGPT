@@ -57,7 +57,7 @@ const Chat = () => {
     const [clearingChat, setClearingChat] = useState<boolean>(false);
     const [hideErrorDialog, { toggle: toggleErrorDialog }] = useBoolean(true);
     const [errorMsg, setErrorMsg] = useState<ErrorMessage | null>()
-    const [searchFlag, setSearchFlag] = useState<boolean>(false);
+    const [searchFlag, setSearchFlag] = useState<boolean>(true);
 
     const errorDialogContentProps = {
         type: DialogType.close,
@@ -148,6 +148,7 @@ const Chat = () => {
     }
 
     const makeApiRequestWithoutCosmosDB = async (question: string, conversationId?: string, searchFlag?: boolean) => {
+        console.log("makeApiRequestWithoutCosmosDB", question, conversationId, searchFlag)
         setIsLoading(true);
         setShowLoadingMessage(true);
         const abortController = new AbortController();
@@ -598,6 +599,7 @@ const Chat = () => {
 
     const onShowCitation = (citation: Citation) => {
         setActiveCitation(citation);
+        console.log("citation", citation);
         setIsCitationPanelOpen(true);
     };
 
@@ -712,11 +714,11 @@ const Chat = () => {
                                 </Stack>
                             )}
                             <Stack>
-                                <Checkbox
+                                {/* <Checkbox
                                     label="Activate on your data"
                                     checked={searchFlag}
                                     onChange={() => setSearchFlag && setSearchFlag(true)}
-                                />
+                                /> */}
                                 {appStateContext?.state.isCosmosDBAvailable?.status !== CosmosDBStatus.NotConfigured && <CommandBarButton
                                     role="button"
                                     styles={{
@@ -775,12 +777,13 @@ const Chat = () => {
 
                             <QuestionInput
                                 clearOnSend
-                                placeholder="Type a new question..."
+                                placeholder={searchFlag.toString()}
                                 disabled={isLoading}
                                 onSend={(question, id) => {
                                     appStateContext?.state.isCosmosDBAvailable?.cosmosDB ? makeApiRequestWithCosmosDB(question, id) : makeApiRequestWithoutCosmosDB(question, id, searchFlag)
                                 }}
                                 conversationId={appStateContext?.state.currentChat?.id ? appStateContext?.state.currentChat?.id : undefined}
+                                searchFlag={searchFlag}
                                 setSearchFlag={setSearchFlag}
                             />
                         </Stack>
