@@ -10,6 +10,7 @@ interface Props {
     placeholder?: string;
     clearOnSend?: boolean;
     conversationId?: string;
+    searchFlag: boolean;
     setSearchFlag?: (searchFlag: boolean) => void;
 }
 
@@ -59,8 +60,9 @@ interface SendButtonProps {
     src?: string;
 }
 
-export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId, setSearchFlag }: Props) => {
+export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId, searchFlag, setSearchFlag }: Props) => {
     const [question, setQuestion] = useState<string>("");
+    console.log(searchFlag)
 
     const sendQuestion = () => {
         if (disabled || !question.trim()) {
@@ -106,8 +108,8 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
             <Checkbox
                 className={styles.questionInputCheckbox}
                 label="Activate on your data"
-                // if this checkbox is checked, set searchFlag to true, else set it to false
-                onChange={() => setSearchFlag && setSearchFlag(true)}
+                checked={searchFlag}
+                onChange={() => setSearchFlag && setSearchFlag(!searchFlag)}
             />
             <div className={styles.questionInputSendButtonContainer}
                 role="button"
