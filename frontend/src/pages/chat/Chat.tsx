@@ -47,6 +47,7 @@ const Chat = () => {
     const AUTH_ENABLED = appStateContext?.state.frontendSettings?.auth_enabled;
     const chatMessageStreamEnd = useRef<HTMLDivElement | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isFirst, setIsFirst] = useState<boolean>(true);
     const [showLoadingMessage, setShowLoadingMessage] = useState<boolean>(false);
     const [activeCitation, setActiveCitation] = useState<Citation>();
     const [isCitationPanelOpen, setIsCitationPanelOpen] = useState<boolean>(false);
@@ -99,6 +100,10 @@ const Chat = () => {
     useEffect(() => {
         setIsLoading(appStateContext?.state.chatHistoryLoadingState === ChatHistoryLoadingState.Loading)
     }, [appStateContext?.state.chatHistoryLoadingState])
+
+    useEffect(() => {
+        setIsFirst(appStateContext?.state.currentChat?.id ? false: true)
+    }, [appStateContext?.state.currentChat?.id])
 
     const getUserInfoList = async () => {
         if (!AUTH_ENABLED) {
@@ -779,14 +784,15 @@ const Chat = () => {
 
                             <QuestionInput
                                 clearOnSend
-                                placeholder={searchFlag.toString()}
+                                placeholder={"Type a new question..."}
                                 disabled={isLoading}
                                 onSend={(question, id) => {
                                     appStateContext?.state.isCosmosDBAvailable?.cosmosDB ? makeApiRequestWithCosmosDB(question, id, searchFlag) : makeApiRequestWithoutCosmosDB(question, id, searchFlag)
                                 }}
                                 conversationId={appStateContext?.state.currentChat?.id ? appStateContext?.state.currentChat?.id : undefined}
                                 searchFlag={searchFlag}
-                                setSearchFlag={setSearchFlag}
+                                    setSearchFlag={setSearchFlag}
+                                    isFirst = {isFirst}
                             />
                         </Stack>
                     </div>

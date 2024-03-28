@@ -12,6 +12,7 @@ interface Props {
     conversationId?: string;
     searchFlag: boolean;
     setSearchFlag?: (searchFlag: boolean) => void;
+    isFirst: boolean;
 }
 
 interface SendQuestionProps {
@@ -60,9 +61,8 @@ interface SendButtonProps {
     src?: string;
 }
 
-export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId, searchFlag, setSearchFlag }: Props) => {
+export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId, searchFlag, setSearchFlag, isFirst }: Props) => {
     const [question, setQuestion] = useState<string>("");
-    console.log(searchFlag)
 
     const sendQuestion = () => {
         if (disabled || !question.trim()) {
@@ -110,6 +110,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 label="Activate on your data"
                 checked={searchFlag}
                 onChange={() => setSearchFlag && setSearchFlag(!searchFlag)}
+                disabled={!isFirst}
             />
             <div className={styles.questionInputSendButtonContainer}
                 role="button"
