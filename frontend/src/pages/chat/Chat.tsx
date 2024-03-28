@@ -273,7 +273,8 @@ const Chat = () => {
         return abortController.abort();
     };
 
-    const makeApiRequestWithCosmosDB = async (question: string, conversationId?: string) => {
+    const makeApiRequestWithCosmosDB = async (question: string, conversationId?: string, searchFlag?:boolean) => {
+        console.log("makeApiRequestWithCosmosDB", question, conversationId, searchFlag)
         setIsLoading(true);
         setShowLoadingMessage(true);
         const abortController = new AbortController();
@@ -284,6 +285,7 @@ const Chat = () => {
             role: "user",
             content: question,
             date: new Date().toISOString(),
+            searchFlag: searchFlag
         };
 
         //api call params set here (generate)
@@ -780,7 +782,7 @@ const Chat = () => {
                                 placeholder={searchFlag.toString()}
                                 disabled={isLoading}
                                 onSend={(question, id) => {
-                                    appStateContext?.state.isCosmosDBAvailable?.cosmosDB ? makeApiRequestWithCosmosDB(question, id) : makeApiRequestWithoutCosmosDB(question, id, searchFlag)
+                                    appStateContext?.state.isCosmosDBAvailable?.cosmosDB ? makeApiRequestWithCosmosDB(question, id, searchFlag) : makeApiRequestWithoutCosmosDB(question, id, searchFlag)
                                 }}
                                 conversationId={appStateContext?.state.currentChat?.id ? appStateContext?.state.currentChat?.id : undefined}
                                 searchFlag={searchFlag}
